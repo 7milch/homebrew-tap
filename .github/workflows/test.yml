@@ -1,0 +1,25 @@
+name: test
+
+on:
+  push:
+    paths: ["Formula/**"]
+  workflow_dispatch:
+
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, macos-15-intel, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install and test every formula
+        shell: bash
+        run: |
+          [ -x /home/linuxbrew/.linuxbrew/bin/brew ] && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          for f in Formula/*.rb; do
+            name="7milch/tap/$(basename "$f" .rb)"
+            brew install "$name"
+            brew test "$name"
+          done
